@@ -19,6 +19,7 @@ import java.util.Map;
  */
 public class OllamaClient {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final String DEFAULT_MODEL = "qwen2.5-coder:latest";
 
     private final String baseUrl;
     private final String model;
@@ -45,7 +46,14 @@ public class OllamaClient {
      * Creates a client using the default local Ollama configuration.
      */
     public OllamaClient() {
-        this("http://localhost:11434", "llama3", Duration.ofSeconds(120));
+        this("http://localhost:11434", resolveDefaultModel(System.getenv("OLLAMA_MODEL")), Duration.ofSeconds(120));
+    }
+
+    static String resolveDefaultModel(String envValue) {
+        if (envValue == null || envValue.trim().isEmpty()) {
+            return DEFAULT_MODEL;
+        }
+        return envValue.trim();
     }
 
     /**
@@ -100,7 +108,7 @@ public class OllamaClient {
             }
             return responseText.toString();
         } catch (HttpTimeoutException e) {
-            throw new OllamaException("Ollama did not answer within " + timeout.toSeconds() + " seconds. Try a smaller model or a longer timeout.", e);
+            throw new OllamaException("Ollama did not answer within " + timeout.getSeconds() + " seconds. Try a smaller model or a longer timeout.", e);
         } catch (JsonProcessingException e) {
             throw new OllamaException("Ollama returned an invalid JSON response.", e);
         } catch (IOException e) {

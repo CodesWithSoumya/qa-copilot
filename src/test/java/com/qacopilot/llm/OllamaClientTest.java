@@ -21,6 +21,17 @@ class OllamaClientTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Test
+    void resolveDefaultModelReturnsFallbackForNullOrBlank() {
+        assertEquals("qwen2.5-coder:latest", OllamaClient.resolveDefaultModel(null));
+        assertEquals("qwen2.5-coder:latest", OllamaClient.resolveDefaultModel("  "));
+    }
+
+    @Test
+    void resolveDefaultModelUsesSuppliedValue() {
+        assertEquals("llama3", OllamaClient.resolveDefaultModel("llama3"));
+    }
+
+    @Test
     void askReturnsResponseTextWhenServerReplies200() throws Exception {
         HttpServer server = createServer(exchange -> {
             String responseBody = "{\"response\":\"hello from ollama\"}";
