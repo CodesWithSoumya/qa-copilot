@@ -20,6 +20,7 @@ import java.util.Map;
 public class OllamaClient {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final String DEFAULT_MODEL = "qwen2.5-coder:latest";
+    private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(300);
 
     private final String baseUrl;
     private final String model;
@@ -46,7 +47,7 @@ public class OllamaClient {
      * Creates a client using the default local Ollama configuration.
      */
     public OllamaClient() {
-        this("http://localhost:11434", resolveDefaultModel(System.getenv("OLLAMA_MODEL")), Duration.ofSeconds(120));
+        this("http://localhost:11434", resolveDefaultModel(System.getenv("OLLAMA_MODEL")), resolveDefaultTimeout(System.getenv("OLLAMA_TIMEOUT_SECONDS")));
     }
 
     static String resolveDefaultModel(String envValue) {
@@ -54,6 +55,21 @@ public class OllamaClient {
             return DEFAULT_MODEL;
         }
         return envValue.trim();
+    }
+
+    static Duration resolveDefaultTimeout(String envValue) {
+        if (envValue == null || envValue.trim().isEmpty()) {
+            return DEFAULT_TIMEOUT;
+        }
+        try {
+            int seconds = Integer.parseInt(envValue.trim());
+            if (seconds > 0) {
+                return Duration.ofSeconds(seconds);
+            }
+        } catch (NumberFormatException ignored) {
+            // fall through to default
+        }
+        return DEFAULT_TIMEOUT;
     }
 
     /**

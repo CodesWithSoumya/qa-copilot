@@ -32,6 +32,19 @@ class OllamaClientTest {
     }
 
     @Test
+    void resolveDefaultTimeoutReturnsFallbackForInvalidValues() {
+        assertEquals(Duration.ofSeconds(300), OllamaClient.resolveDefaultTimeout(null));
+        assertEquals(Duration.ofSeconds(300), OllamaClient.resolveDefaultTimeout("   "));
+        assertEquals(Duration.ofSeconds(300), OllamaClient.resolveDefaultTimeout("abc"));
+        assertEquals(Duration.ofSeconds(300), OllamaClient.resolveDefaultTimeout("-5"));
+    }
+
+    @Test
+    void resolveDefaultTimeoutUsesSuppliedPositiveValue() {
+        assertEquals(Duration.ofSeconds(60), OllamaClient.resolveDefaultTimeout("60"));
+    }
+
+    @Test
     void askReturnsResponseTextWhenServerReplies200() throws Exception {
         HttpServer server = createServer(exchange -> {
             String responseBody = "{\"response\":\"hello from ollama\"}";
